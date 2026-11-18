@@ -56,6 +56,23 @@ td.r,th.r{text-align:right}
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
 .tools input{max-width:260px}
 footer{text-align:center;color:var(--mut);font-size:12px;padding:30px}
+.tr-hero{display:grid;grid-template-columns:1fr 1.1fr;gap:28px;align-items:center;background:#fff;border-radius:18px;padding:22px;border:1px solid var(--line)}
+.tr-hero img{width:100%;border-radius:14px}
+.pill{display:inline-block;background:var(--m);color:#fff;font-size:11px;font-weight:700;letter-spacing:1.5px;padding:4px 10px;border-radius:20px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.facts div{background:var(--cr);border-radius:10px;padding:10px}.facts b{display:block;font-size:20px;color:var(--m2)}.facts span{font-size:12px;color:var(--mut)}
+.tl{position:relative;margin:10px 0 0 14px;border-left:3px solid var(--sun);padding-left:22px}
+.tl .st{position:relative;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;opacity:0;transform:translateY(12px);transition:all .5s}
+.tl .st.in{opacity:1;transform:none}
+.tl .st:before{content:attr(data-i);position:absolute;left:-38px;top:12px;width:28px;height:28px;border-radius:50%;background:var(--m);color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center}
+.tl .st b{color:var(--m2)}.tl .st .d{font-size:12px;color:var(--mut);float:right}
+.qrbox{display:flex;gap:16px;align-items:center;background:#fff;border-radius:14px;padding:16px;border:1px solid var(--line)}.qrbox img{width:150px;box-shadow:none;border-radius:0}
+.inv{display:grid;grid-template-columns:330px 1fr;gap:20px;align-items:start}
+.sliders{background:#fff;border-radius:14px;padding:16px;border:1px solid var(--line)}
+.sliders .sv{display:flex;justify-content:space-between;font-size:13px;margin-top:12px}.sliders .sv b{color:var(--m)}
+.sliders input[type=range]{padding:0;accent-color:var(--m)}
+.chart{background:#fff;border-radius:14px;padding:14px;border:1px solid var(--line)}.ch-t{font-weight:700;margin-bottom:6px}
+@media(max-width:800px){.tr-hero,.inv{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}}
 @media(max-width:800px){.shop,.strip,.board{grid-template-columns:1fr}.hero h1{font-size:30px}}
 @media print{header,.noprint{display:none}}
 </style></head><body>
@@ -76,6 +93,8 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:30px}
     <button data-v="board">📦 Orders</button>
     <button data-v="money">💲 Money</button>
     <button data-v="prices">🏷️ Price list</button>
+    <button data-v="trace">🐄 Pasture to Plate</button>
+    <button data-v="invest">📈 Investors</button>
   </nav>
 </header>
 
@@ -148,6 +167,40 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:30px}
     <button class="btn sm gy" onclick="if(confirm('Reset demo data?')){localStorage.removeItem(KEY);location.reload()}">Reset demo data</button>
   </div>
   <p class="s" style="color:var(--mut);font-size:13px"><b>Cost</b> = your cost per unit (calf + feed + processing + packaging). Profit = price − cost.</p>
+</div></section>
+
+<!-- PASTURE TO PLATE (traceability) -->
+<section id="trace" class="view"><div class="wrap">
+  <div class="tr-hero">
+    <img src="img/lot34.jpg" alt="Lot 34">
+    <div>
+      <div class="pill">SCANNED FROM YOUR PACKAGE · LOT 34</div>
+      <h2 style="font-size:34px;margin:.2em 0">Meet the animal behind your beef.</h2>
+      <p>Every Shaded W package carries a QR code. Scan it and you see exactly where your beef came from: the calf, the pasture, the finish, the processor, the date it was packed. No other beef in the grocery store can tell you that.</p>
+      <div class="facts" id="trFacts"></div>
+    </div>
+  </div>
+  <h3>Lot 34's story</h3>
+  <div class="tl" id="trTl"></div>
+  <div class="strip" style="margin-top:26px">
+    <div class="qrbox"><img src="img/qr-lot34.png" alt="QR"><div><b>Try it:</b> point a phone camera at this code. It opens this page, the same as a customer scanning the sticker on their ribeye.</div></div>
+    <img src="img/leather-gold.jpg" alt="Shaded W brand" style="max-width:420px;justify-self:center">
+  </div>
+  <p class="s" style="color:var(--mut);font-size:12px">Demo data. In the live site every lot is entered once at processing; its QR prints on the package labels automatically.</p>
+</div></section>
+
+<!-- INVESTORS (projections) -->
+<section id="invest" class="view"><div class="wrap">
+  <h2>Growth model</h2>
+  <p style="color:var(--mut);margin-top:0">Move the sliders. Every number on this page recalculates live.</p>
+  <div class="inv">
+    <div class="sliders" id="sl"></div>
+    <div>
+      <div class="kpis" id="ik"></div>
+      <div class="chart"><div class="ch-t">5-year outlook: revenue vs. profit</div><svg id="ich" viewBox="0 0 560 260" width="100%"></svg></div>
+    </div>
+  </div>
+  <p style="color:var(--mut);font-size:12px">Illustrative model, not a forecast. Defaults: shares priced on hanging weight, boxes priced on take-home (~62% yield), cost per head covers calf, feed, processing and packaging.</p>
 </div></section>
 
 <div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
@@ -307,6 +360,45 @@ function exportCSV(){
   const csv=rows.map(r=>r.map(c=>'"'+String(c??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv'}));a.download='ShadedW-orders-'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 }
-function drawAll(){drawStore();drawBoard();drawMoney();drawPrices()}
+// ---- Pasture to Plate (traceability)
+const LOT={id:34,facts:[['742 lb','hanging weight'],['BMS 6','marbling (demo)'],['412 days','on our grass + finish']],
+  steps:[['Born on the ranch','Mar 2025','Out of our Wagyu-cross cow herd. Tagged Lot 34 at birth.'],
+         ['Weaned on native pasture','Oct 2025','Grass, hay and minerals. No hormones, no daily antibiotics.'],
+         ['Grain finish','Jun–Oct 2026','Slow Wagyu finish on a Texas ration for the marbling you can see.'],
+         ['Processed','Nov 4, 2026','Inspected processor. Dry-aged 14 days, hand cut to the customer\'s cut sheet.'],
+         ['Vacuum sealed + frozen','Nov 18, 2026','Each package labeled with this lot\'s QR code.'],
+         ['On your table','Today','Thank you for buying beef from a family ranch.']]};
+function drawTrace(){
+  document.getElementById('trFacts').innerHTML=LOT.facts.map(f=>`<div><b>${f[0]}</b><span>${f[1]}</span></div>`).join('');
+  document.getElementById('trTl').innerHTML=LOT.steps.map((s,i)=>`<div class="st" data-i="${i+1}"><span class="d">${s[1]}</span><b>${s[0]}</b><div style="font-size:14px;margin-top:4px">${s[2]}</div></div>`).join('');
+  document.querySelectorAll('#trTl .st').forEach((e,i)=>setTimeout(()=>e.classList.add('in'),150+i*220));
+}
+// ---- Investor growth model
+const SL=[['head','Head finished, year 1',4,60,12,1,''],['grow','Herd growth per year',0,60,25,5,'%'],['hw','Hanging weight (lb)',550,900,720,10,''],
+  ['share','Sold as whole/half/qtr',0,100,60,5,'%'],['psh','Share price ($/lb hanging)',7,16,11,0.25,'$'],['pbox','Box price ($/lb take-home)',14,40,24,1,'$'],
+  ['cost','Cost per head (all-in)',2000,7000,4800,100,'$']];
+const IV={};SL.forEach(s=>IV[s[0]]=s[4]);
+function drawInvest(){
+  if(!document.getElementById('sl').children.length)document.getElementById('sl').innerHTML=SL.map(s=>`<div class="sv"><span>${s[1]}</span><b id="v_${s[0]}"></b></div><input type="range" min="${s[2]}" max="${s[3]}" step="${s[5]}" value="${IV[s[0]]}" oninput="IV['${s[0]}']=+this.value;drawInvest()">`).join('');
+  SL.forEach(s=>document.getElementById('v_'+s[0]).textContent=s[6]==='$'?'$'+IV[s[0]].toLocaleString():IV[s[0]]+s[6]);
+  const perHead=()=>{const sh=IV.share/100;return sh*IV.hw*IV.psh+(1-sh)*IV.hw*0.62*IV.pbox-(1-sh)*IV.hw*0.62*1.5};  // $1.50/lb box packaging + ship supplies
+  const yrs=[];let h=IV.head;for(let y=1;y<=5;y++){const rev=h*perHead(),pr=rev-h*IV.cost;yrs.push({y,h:Math.round(h),rev,pr});h*=1+IV.grow/100}
+  const y1=yrs[0],t5=yrs.reduce((a,b)=>({rev:a.rev+b.rev,pr:a.pr+b.pr}),{rev:0,pr:0});
+  document.getElementById('ik').innerHTML=[['Revenue / head',money(perHead())],['Profit / head',money(perHead()-IV.cost)],['Year-1 revenue',money(y1.rev)],['Year-1 profit',money(y1.pr)],['5-yr revenue',money(t5.rev)],['5-yr profit',money(t5.pr)]]
+    .map((k,i)=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v" style="color:${i%2?(k[1].includes('-')?'var(--m)':'var(--ok)'):'inherit'}">${k[1]}</div></div>`).join('');
+  const mx=Math.max(1,...yrs.map(r=>r.rev)),H=170,bw=38;
+  document.getElementById('ich').innerHTML=yrs.map((r,i)=>{const x=40+i*104,hr=r.rev/mx*H,hp=Math.max(0,r.pr)/mx*H;
+    return `<rect x="${x}" y="${220-hr}" width="${bw}" height="${hr}" rx="4" fill="#d9c7ae"><animate attributeName="height" from="0" to="${hr}" dur=".5s"/><animate attributeName="y" from="220" to="${220-hr}" dur=".5s"/></rect>
+      <rect x="${x+bw+4}" y="${220-hp}" width="${bw}" height="${hp}" rx="4" fill="#2f7d4f"/>
+      <text x="${x+bw}" y="242" text-anchor="middle" font-size="12" fill="#7b716a">Yr ${r.y} · ${r.h} hd</text>
+      <text x="${x+bw/2}" y="${214-hr}" text-anchor="middle" font-size="11" fill="#2a2725">${money(r.rev/1000)}k</text>`}).join('')+
+    `<line x1="30" y1="220" x2="550" y2="220" stroke="#e3d9cc"/><rect x="40" y="6" width="10" height="10" fill="#d9c7ae"/><text x="54" y="15" font-size="11">Revenue</text><rect x="120" y="6" width="10" height="10" fill="#2f7d4f"/><text x="134" y="15" font-size="11">Profit</text>`;
+}
+function drawAll(){drawStore();drawBoard();drawMoney();drawPrices();drawInvest()}
 drawAll();
+function openView(v){const b=document.querySelector(`nav button[data-v="${v}"]`);if(b)b.click()}
+document.querySelector('nav button[data-v="trace"]').addEventListener('click',drawTrace);
+if(location.hash.startsWith('#trace'))openView('trace');
+if(location.hash==='#invest')openView('invest');
+if(location.hash)setTimeout(()=>window.scrollTo(0,0),60);
 </script></body></html>
